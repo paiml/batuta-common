@@ -155,6 +155,29 @@ pub fn cosine_similarity(a: &[f64], b: &[f64]) -> f64 {
 }
 
 // =============================================================================
+// USAGE PERCENT
+// =============================================================================
+
+/// Compute usage percentage from used/total byte counts.
+///
+/// Returns 0.0 if `total` is 0 (avoids divide-by-zero).
+///
+/// # Examples
+/// ```
+/// use batuta_common::math::usage_percent;
+/// assert!((usage_percent(750, 1000) - 75.0).abs() < 1e-10);
+/// assert_eq!(usage_percent(0, 0), 0.0);
+/// assert!((usage_percent(1024, 4096) - 25.0).abs() < 1e-10);
+/// ```
+#[must_use]
+pub fn usage_percent(used: u64, total: u64) -> f64 {
+    if total == 0 {
+        return 0.0;
+    }
+    (used as f64 / total as f64) * 100.0
+}
+
+// =============================================================================
 // TESTS
 // =============================================================================
 
@@ -265,5 +288,27 @@ mod tests {
         let a = [1.0f32, 0.0, 0.0];
         let b = [0.0f32, 1.0, 0.0];
         assert!(cosine_similarity_f32(&a, &b).abs() < 1e-6);
+    }
+
+    // --- usage_percent ---
+
+    #[test]
+    fn test_usage_percent_normal() {
+        assert!((usage_percent(750, 1000) - 75.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_usage_percent_zero_total() {
+        assert_eq!(usage_percent(0, 0), 0.0);
+    }
+
+    #[test]
+    fn test_usage_percent_full() {
+        assert!((usage_percent(1000, 1000) - 100.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_usage_percent_empty() {
+        assert!((usage_percent(0, 1000) - 0.0).abs() < 1e-10);
     }
 }
