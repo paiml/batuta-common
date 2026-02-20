@@ -12,4 +12,5 @@
 pub mod compression;
 pub mod display;
 pub mod fmt;
+pub mod math;
 pub mod sys;

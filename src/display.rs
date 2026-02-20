@@ -283,6 +283,38 @@ pub trait WithDimensions: Sized {
 }
 
 // =============================================================================
+// CONVENIENCE: truncate_str (ASCII "..." suffix)
+// =============================================================================
+
+/// Truncate a string to `max_len` with ASCII `"..."` suffix.
+///
+/// This is a convenience wrapper for CLI output where ASCII ellipsis is
+/// preferred over Unicode ellipsis. If the string fits, it is returned as-is.
+///
+/// # Examples
+/// ```
+/// use batuta_common::display::truncate_str;
+/// assert_eq!(truncate_str("hello world", 8), "hello...");
+/// assert_eq!(truncate_str("short", 10), "short");
+/// assert_eq!(truncate_str("ab", 3), "ab");
+/// assert_eq!(truncate_str("abcdef", 3), "...");
+/// ```
+#[must_use]
+pub fn truncate_str(s: &str, max_len: usize) -> String {
+    if s.len() <= max_len {
+        return s.to_string();
+    }
+    if max_len <= 3 {
+        return ".".repeat(max_len);
+    }
+    let end = s
+        .char_indices()
+        .nth(max_len - 3)
+        .map_or(max_len - 3, |(i, _)| i);
+    format!("{}...", &s[..end])
+}
+
+// =============================================================================
 // TESTS
 // =============================================================================
 
@@ -383,6 +415,38 @@ mod tests {
     #[test]
     fn test_format_percent_column() {
         assert_eq!(format_percent_column(45.3, 7), "  45.3%");
+    }
+
+    // --- truncate_str ---
+
+    #[test]
+    fn test_truncate_str_short_unchanged() {
+        assert_eq!(truncate_str("hello", 10), "hello");
+    }
+
+    #[test]
+    fn test_truncate_str_exact_fit() {
+        assert_eq!(truncate_str("hello", 5), "hello");
+    }
+
+    #[test]
+    fn test_truncate_str_with_ellipsis() {
+        assert_eq!(truncate_str("hello world", 8), "hello...");
+    }
+
+    #[test]
+    fn test_truncate_str_min_len() {
+        assert_eq!(truncate_str("abcdef", 3), "...");
+    }
+
+    #[test]
+    fn test_truncate_str_len_4() {
+        assert_eq!(truncate_str("abcdef", 4), "a...");
+    }
+
+    #[test]
+    fn test_truncate_str_empty() {
+        assert_eq!(truncate_str("", 5), "");
     }
 
     // --- WithDimensions trait ---
