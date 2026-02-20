@@ -117,6 +117,74 @@ pub fn format_bytes(bytes: u64) -> String {
     }
 }
 
+/// Format bytes compactly with short IEC-based units and no spaces.
+///
+/// Uses 1024-based thresholds with single-letter units (K, M, G, T)
+/// and 1 decimal place. Values below 1024 are shown as fractional K.
+/// Intended for tight UI columns like disk panels.
+///
+/// # Examples
+/// ```
+/// use batuta_common::fmt::format_bytes_compact;
+/// assert_eq!(format_bytes_compact(1_073_741_824), "1.0G");
+/// assert_eq!(format_bytes_compact(1_048_576), "1.0M");
+/// assert_eq!(format_bytes_compact(1024), "1.0K");
+/// assert_eq!(format_bytes_compact(512), "0.5K");
+/// ```
+#[must_use]
+pub fn format_bytes_compact(bytes: u64) -> String {
+    const KB: u64 = 1024;
+    const MB: u64 = KB * 1024;
+    const GB: u64 = MB * 1024;
+    const TB: u64 = GB * 1024;
+
+    if bytes >= TB {
+        format!("{:.1}T", bytes as f64 / TB as f64)
+    } else if bytes >= GB {
+        format!("{:.1}G", bytes as f64 / GB as f64)
+    } else if bytes >= MB {
+        format!("{:.1}M", bytes as f64 / MB as f64)
+    } else {
+        format!("{:.1}K", bytes as f64 / KB as f64)
+    }
+}
+
+/// Format bytes with variable precision and full unit labels.
+///
+/// Uses 1024-based thresholds. TB and GB use 2 decimal places for
+/// precision; MB and KB use 1 decimal place. Values below 1024 show
+/// the raw count with " B" suffix. Intended for transfer totals
+/// and PCIe bandwidth displays.
+///
+/// # Examples
+/// ```
+/// use batuta_common::fmt::format_bytes_full;
+/// assert_eq!(format_bytes_full(1_099_511_627_776), "1.00 TB");
+/// assert_eq!(format_bytes_full(1_073_741_824), "1.00 GB");
+/// assert_eq!(format_bytes_full(1_048_576), "1.0 MB");
+/// assert_eq!(format_bytes_full(1024), "1.0 KB");
+/// assert_eq!(format_bytes_full(500), "500 B");
+/// ```
+#[must_use]
+pub fn format_bytes_full(bytes: u64) -> String {
+    const KB: u64 = 1024;
+    const MB: u64 = KB * 1024;
+    const GB: u64 = MB * 1024;
+    const TB: u64 = GB * 1024;
+
+    if bytes >= TB {
+        format!("{:.2} TB", bytes as f64 / TB as f64)
+    } else if bytes >= GB {
+        format!("{:.2} GB", bytes as f64 / GB as f64)
+    } else if bytes >= MB {
+        format!("{:.1} MB", bytes as f64 / MB as f64)
+    } else if bytes >= KB {
+        format!("{:.1} KB", bytes as f64 / KB as f64)
+    } else {
+        format!("{bytes} B")
+    }
+}
+
 /// Format bytes per second as a rate string.
 ///
 /// # Examples
@@ -381,6 +449,25 @@ mod tests {
         assert_eq!(format_bytes(1024), "1.0 KB");
         assert_eq!(format_bytes(1_048_576), "1.0 MB");
         assert_eq!(format_bytes(1_073_741_824), "1.0 GB");
+    }
+
+    #[test]
+    fn test_format_bytes_compact() {
+        assert_eq!(format_bytes_compact(0), "0.0K");
+        assert_eq!(format_bytes_compact(512), "0.5K");
+        assert_eq!(format_bytes_compact(1024), "1.0K");
+        assert_eq!(format_bytes_compact(1_048_576), "1.0M");
+        assert_eq!(format_bytes_compact(1_073_741_824), "1.0G");
+        assert_eq!(format_bytes_compact(1_099_511_627_776), "1.0T");
+    }
+
+    #[test]
+    fn test_format_bytes_full() {
+        assert_eq!(format_bytes_full(500), "500 B");
+        assert_eq!(format_bytes_full(1024), "1.0 KB");
+        assert_eq!(format_bytes_full(1_048_576), "1.0 MB");
+        assert_eq!(format_bytes_full(1_073_741_824), "1.00 GB");
+        assert_eq!(format_bytes_full(1_099_511_627_776), "1.00 TB");
     }
 
     #[test]
