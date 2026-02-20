@@ -10,6 +10,8 @@ keywords = ["formatting", "utilities", "terminal", "display"]
 categories = ["command-line-utilities", "text-processing"]
 
 [dependencies]
+lz4_flex = { version = "0.11", default-features = false, features = ["safe-encode", "safe-decode"] }
+zstd = { version = "0.13", default-features = false }
 
 [lints.clippy]
 pedantic = { level = "warn", priority = -1 }

@@ -154,7 +154,7 @@ pub fn format_bytes_compact(bytes: u64) -> String {
 /// Uses 1024-based thresholds. TB and GB use 2 decimal places for
 /// precision; MB and KB use 1 decimal place. Values below 1024 show
 /// the raw count with " B" suffix. Intended for transfer totals
-/// and PCIe bandwidth displays.
+/// and `PCIe` bandwidth displays.
 ///
 /// # Examples
 /// ```

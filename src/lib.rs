@@ -9,6 +9,7 @@
 //! - [`sys`] — System information (cgroup detection, CPU info)
 //! - [`display`] — Column alignment, truncation, and builder traits
 
+pub mod compression;
 pub mod display;
 pub mod fmt;
 pub mod sys;
